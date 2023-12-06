@@ -8,7 +8,7 @@ function login(e) {
     console.log(loginDetails)
     axios.post('http://localhost:3000/user/login', loginDetails).then(response => {
         if(response.status === 200){
-            alert(response.data.messange)
+            alert(response.data.message)
         } else {
             throw new Error(response.data.message)
         }

@@ -1,4 +1,5 @@
 const User = require('../model/users');
+const bcrypt = require('bcrypt');
 
 function isstringinvalid(string){
     if(string == undefined || string.length == 0){
@@ -8,41 +9,47 @@ function isstringinvalid(string){
     }
 }
 
-exports.postuser = async (req, res, next) => {
+exports.Signup = async (req, res, next) => {
     try {
         const {name, email, password} = req.body;
         if(isstringinvalid(name) || isstringinvalid(email) || isstringinvalid(password)){
             return res.status(400).json({err: "bad parameter. something is missing"})
         }
-        const newUser = await User.create({
-            name,
-            email,
-            password
-        });
-        console.log(newUser + 'hiiii');
-        res.status(201).json(newUser);
+        const saltrounds = 10;
+        bcrypt.hash(password, saltrounds, async (err, hash) => {
+            console.log(err)
+            await User.create({name, email, password:hash});
+            res.status(201).json({message: 'Successfuly create new user'});
+        })
     } catch (err) {
         console.error(err);
-        res.status(500).json(error);
+        res.status(500).json(err);
     }
 };
 
-exports.login = async (req, res, next) => {
+exports.login = async (req, res) => {
+    try{
     const { email, password} = req.body;
     if(isstringinvalid(email) || isstringinvalid(password)){
         return res.status(400).json({message: 'Email id or password missing', success: false})
     }
-    User.findAll({ where : {email}}).then(newUser => {
-        if(newUser.length > 0){
-            if(newUser[0].password === password){
-                res.status(200).json({success: true, message: "user logged in successfully"})
-            } else {
+    const user =  await User.findAll({ where : {email}})
+        if(user.length > 0){
+            bcrypt.compare(password, user[0].password, (err, result) => {
+                if(err){
+                    res.status(500).json({success:false, message: 'Something wend wrong'})
+                }
+                if(result == true){
+                    res.status(200).json({success: true, message: "user logged in successfully"})
+                }
+                else {
                 return res.status(400).json({success: false, message: 'password is incorrect'})
             }
+        })
         } else {
             return res.status(404).json({success: false, message:'user doesnot exitst'})
         }
-    }).catch(err => {
+    }catch(err){
         res.status(500).json({message: err, success:false})
-    })
+    }
 }
