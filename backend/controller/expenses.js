@@ -1,0 +1,39 @@
+const Expense = require('../model/expenses');
+
+exports.addExpense = async (req, res, next) => {
+    try{
+        const {expenseamout, description, category} = req.body;
+        console.log(req.body + 'basu');
+        const newExpense = await Expense.create({expenseamout, description, category});
+        console.log(newExpense  + 'basu');
+        res.status(201).json(newExpense);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'An error occurred while creating the expense.' });
+    }
+}
+
+exports.deleteExpense = async (req, res, next) => {
+    try {
+        const expenseId = req.params.id;
+        if(expenseId == undefined || expenseId.length === 0){
+            res.status(400).json({success:false, message:"bad parameter"})
+        }
+        const deletedExpenseCount = await Expense.destroy({ where: { id: expenseId } });
+        res.status(201).json({ deletedCount: deletedExpenseCount });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'An error occurred while deleting the expense.'});
+    }
+};
+
+exports.getExpenses = async (req, res, next) => {
+    try {
+        const expense = await Expense.findAll();
+        console.log('hiiii', expense);
+        res.status(201).json(expense);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'An error occurred while fetching expense.' });
+    }
+};

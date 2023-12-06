@@ -10,6 +10,8 @@ const sequelize = require('./util/database');
 
 const User = require('./model/users');
 
+const Expense = require('./model/expenses');
+
 const userRoutes = require('./route/user');
 
 app.use(cors());
@@ -21,6 +23,7 @@ app.use(express.json());
 app.use('/user', userRoutes);
 
 User.sync();
+Expense.sync();
 
 //app.listen(3000);
 
