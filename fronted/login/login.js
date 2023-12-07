@@ -9,6 +9,8 @@ function login(e) {
     axios.post('http://localhost:3000/user/login', loginDetails).then(response => {
         if(response.status === 200){
             alert(response.data.message)
+            console.log(response.data)
+            localStorage.setItem('token', response.data.token)
             window.location.href = "../ExpenseTracker/index.html"
         } else {
             throw new Error(response.data.message)

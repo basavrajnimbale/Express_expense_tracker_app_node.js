@@ -22,8 +22,8 @@ app.use(express.json());
 
 app.use('/user', userRoutes);
 
-User.sync();
-Expense.sync();
+User.hasMany(Expense);
+Expense.belongsTo(User);
 
 //app.listen(3000);
 

@@ -4,7 +4,7 @@ exports.addExpense = async (req, res, next) => {
     try{
         const {expenseamout, description, category} = req.body;
         console.log(req.body + 'basu');
-        const newExpense = await Expense.create({expenseamout, description, category});
+        const newExpense = await Expense.create({expenseamout, description, category, userId: req.user.id});
         console.log(newExpense  + 'basu');
         res.status(201).json(newExpense);
     } catch (err) {
@@ -19,7 +19,7 @@ exports.deleteExpense = async (req, res, next) => {
         if(expenseId == undefined || expenseId.length === 0){
             res.status(400).json({success:false, message:"bad parameter"})
         }
-        const deletedExpenseCount = await Expense.destroy({ where: { id: expenseId } });
+        const deletedExpenseCount = await Expense.destroy({ where: { id: expenseId, userId : req.user.id}});
         res.status(201).json({ deletedCount: deletedExpenseCount });
     } catch (err) {
         console.error(err);
@@ -29,7 +29,7 @@ exports.deleteExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try {
-        const expense = await Expense.findAll();
+        const expense = await Expense.findAll({where : {userId: req.user.id}});
         console.log('hiiii', expense);
         res.status(201).json(expense);
     } catch (err) {

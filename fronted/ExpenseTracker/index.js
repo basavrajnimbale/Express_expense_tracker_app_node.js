@@ -9,10 +9,11 @@ form.addEventListener('submit', async (e) =>{
     let expenseDetails = {
         expenseamout,
         description,
-        category
+        category,
     }
     try {
-        let result = await axios.post('http://localhost:3000/user/add-expense ', expenseDetails);
+        const token = localStorage.getItem('token')
+        let result = await axios.post('http://localhost:3000/user/add-expense ', expenseDetails, {headers: {"Authorization" : token}});
         console.log('hiiii' + result.data)
         displayDetails(result.data);
         form.reset();
@@ -24,7 +25,7 @@ form.addEventListener('submit', async (e) =>{
 
 function displayDetails(object) {
     let li = document.createElement('li');
-    li.id = `delete${object.id}`;
+    li.id = `${object.id}`;
     li.classList.add("firstLi")
     li.innerHTML = `<div>${object.expenseamout} - ${object.description} - ${object.category} <button type='button' class="button" onclick='deleteExpense(${object.id})'>Delete Expense</button></div>`;
     ul.appendChild(li);
@@ -32,8 +33,11 @@ function displayDetails(object) {
 
 async function deleteExpense(id) {
     try {
-        let result = await axios.delete(`http://localhost:3000/user/delete-expense/${id}`);
-        document.getElementById(`delete${id}`).remove();
+        const token = localStorage.getItem('token')
+        let result = await axios.delete(`http://localhost:3000/user/delete-expense/${id}`, {headers: {"Authorization" : token}});
+        console.log(result.data)
+        document.getElementById(`${id}`).remove();
+
     }
     catch {
         console.log('error - delete error');
@@ -42,8 +46,10 @@ async function deleteExpense(id) {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
+    
     try {
-        let result = await axios.get('http://localhost:3000/user/get-expenses');
+        const token = localStorage.getItem('token')
+        let result = await axios.get('http://localhost:3000/user/get-expenses', {headers: {"Authorization" : token}});
         console.log(result)
         console.log(result.data)
         result.data.forEach((expense) => {
@@ -55,4 +61,4 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log('error - get error')
         console.log('Error occurred while fetching or processing data.');
     }
-});
+});   
