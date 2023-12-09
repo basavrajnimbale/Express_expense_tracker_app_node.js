@@ -3,9 +3,9 @@ const Expense = require('../model/expenses');
 exports.addExpense = async (req, res, next) => {
     try{
         const {expenseamout, description, category} = req.body;
-        console.log(req.body + 'basu');
+        // console.log(req.body + 'basu');
         const newExpense = await Expense.create({expenseamout, description, category, userId: req.user.id});
-        console.log(newExpense  + 'basu');
+        // console.log(newExpense  + 'basu');
         res.status(201).json(newExpense);
     } catch (err) {
         console.error(err);
@@ -29,8 +29,9 @@ exports.deleteExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try {
+        console.log(req + 'this is user id');
         const expense = await Expense.findAll({where : {userId: req.user.id}});
-        console.log('hiiii', expense);
+        //('hiiii', expense);
         res.status(201).json(expense);
     } catch (err) {
         console.error(err);
