@@ -5,7 +5,7 @@ const purchasepremium = async (req, res, next) => {
     try {
         const rzp = new Rezorpay({
             key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET
+            key_secret: process.env.RAZORPAY_KEY_SECRET                                                 
         });
         const amount = 2500;
 
