@@ -13,7 +13,7 @@ form.addEventListener('submit', async (e) => {
     }
     try {
         const token = localStorage.getItem('token')
-        let result = await axios.post('http://localhost:3000/user/add-expense ', expenseDetails, { headers: { "Authorization": token } });
+        let result = await axios.post('http://localhost:3000/expense/add-expense ', expenseDetails, { headers: { "Authorization": token } });
         console.log('hiiii' + result.data)
         displayDetails(result.data);
         form.reset();
@@ -34,7 +34,7 @@ function displayDetails(object) {
 async function deleteExpense(id) {
     try {
         const token = localStorage.getItem('token')
-        let result = await axios.delete(`http://localhost:3000/user/delete-expense/${id}`, { headers: { "Authorization": token } });
+        let result = await axios.delete(`http://localhost:3000/expense/delete-expense/${id}`, { headers: { "Authorization": token } });
         // console.log(result.data)
         document.getElementById(`${id}`).remove();
 
@@ -61,6 +61,10 @@ document.getElementById('rzp-button1').onclick = async function (e) {
                 payment_id: response.razorpay_payment_id,
             }, { headers: { "Authorization": token } })
             alert('You are a Premium User Now')
+            document.getElementById('rzp-button1').style.visibility = "hidden"
+            document.getElementById('message').innerHTML = "you are a primium user"
+            localStorage.setItem('token', res.data.token)
+            showLeaderBoard()
         },
     }
     const rzp1 = new Razorpay(options);
@@ -73,12 +77,60 @@ document.getElementById('rzp-button1').onclick = async function (e) {
     })
 }
 
+function showLeaderBoard() {
+    const inputElement = document.createElement("input");
+    inputElement.type = "button";
+    inputElement.value = 'Show Leaderboard';
+    inputElement.onclick = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const userLeaderBoardArray = await axios.get('http://localhost:3000/premium/showLeaderBoard', {
+                headers: { "Authorization": token }
+            });
+
+            const leaderboardElem = document.getElementById('leaderboard');
+            leaderboardElem.innerHTML = '<h1>Leader Board</h1>'; // Clear previous content before appending new data
+
+            userLeaderBoardArray.data.forEach((userDetails) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Name - ${userDetails.name}, Total Expense - ${userDetails.total_cost}`;
+                leaderboardElem.appendChild(listItem);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    document.getElementById("message").appendChild(inputElement);
+}
+
+function showPrimiumuserMessage(){
+    document.getElementById('rzp-button1').style.visibility = "hidden"
+    document.getElementById('message').innerHTML = "you are a primium user" 
+}
+
+function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
 
 window.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const token = localStorage.getItem('token')
-        let result = await axios.get('http://localhost:3000/user/get-expenses', { headers: { "Authorization": token } });
+        const decodeToken = parseJwt(token)
+        console.log(decodeToken)
+        const ispremiumuser = decodeToken.ispremiumuser
+        if(ispremiumuser){
+            showPrimiumuserMessage();
+            showLeaderBoard()
+        }
+        let result = await axios.get('http://localhost:3000/expense/get-expenses', { headers: { "Authorization": token } });
         console.log(result)
         console.log(result.data)
         result.data.forEach((expense) => {
