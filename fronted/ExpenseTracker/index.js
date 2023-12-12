@@ -34,10 +34,8 @@ async function deleteExpense(id) {
     try {
         const token = localStorage.getItem('token')
         let result = await axios.delete(`http://localhost:3000/expense/delete-expense/${id}`, { headers: { "Authorization": token } });
-        console.log(result.data)
         document.getElementById(`${id}`).remove();
         upadatedExpensefun(result.data.user)
-        console.log(result.data.user)
 
     }
     catch {
@@ -63,7 +61,6 @@ document.getElementById('rzp-button1').onclick = async function (e) {
         "order_id": response.data.order.id, //for one time payment 
         //this handle function will handle the success payment
         "handler": async (response) => {
-            console.log('testing')
             const res = await axios.post('http://localhost:3000/purchase/updatetransactionstatus', {
                 order_id: options.order_id,
                 payment_id: response.razorpay_payment_id,
