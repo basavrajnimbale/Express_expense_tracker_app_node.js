@@ -9,7 +9,7 @@ const Expense = sequelize.define('expense',{
         allowNull: false,
         primaryKey: true
     },
-    expenseamout:{
+    expenseamount:{
         type:Sequelize.STRING,
         allowNull: false
     },

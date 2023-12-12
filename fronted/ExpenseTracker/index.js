@@ -3,19 +3,18 @@ const ul = document.getElementById('listOfExpenses')
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    let expenseamout = document.getElementById('expenseamout').value;
+    let expenseamount = document.getElementById('expenseamount').value;
     let description = document.getElementById('description').value;
     let category = document.getElementById('category').value;
     let expenseDetails = {
-        expenseamout,
+        expenseamount,
         description,
         category,
     }
     try {
         const token = localStorage.getItem('token')
         let result = await axios.post('http://localhost:3000/expense/add-expense ', expenseDetails, { headers: { "Authorization": token } });
-        console.log('hiiii' + result.data)
-        displayDetails(result.data);
+        displayDetails(result.data.expense);
         form.reset();
     }
     catch {
@@ -27,7 +26,7 @@ function displayDetails(object) {
     let li = document.createElement('li');
     li.id = `${object.id}`;
     li.classList.add("firstLi")
-    li.innerHTML = `<div>${object.expenseamout} - ${object.description} - ${object.category} <button type='button' class="button" onclick='deleteExpense(${object.id})'>Delete Expense</button></div>`;
+    li.innerHTML = `<div>${object.expenseamount} - ${object.description} - ${object.category} <button type='button' class="button" onclick='deleteExpense(${object.id})'>Delete Expense</button></div>`;
     ul.appendChild(li);
 }
 
@@ -35,14 +34,23 @@ async function deleteExpense(id) {
     try {
         const token = localStorage.getItem('token')
         let result = await axios.delete(`http://localhost:3000/expense/delete-expense/${id}`, { headers: { "Authorization": token } });
-        // console.log(result.data)
+        console.log(result.data)
         document.getElementById(`${id}`).remove();
+        upadatedExpensefun(result.data.user)
+        console.log(result.data.user)
 
     }
     catch {
         console.log('error - delete error');
         console.log('Error occurred while delecting data.');
     }
+}
+
+function upadatedExpensefun(userDetails) {
+    const updateExpense = document.getElementById(`leaderBoard${userDetails.id}`)
+    if(updateExpense)
+    updateExpense.textContent = `Name - ${userDetails.name}, Total Expense - ${userDetails.totalExpenses}`;
+
 }
 
 document.getElementById('rzp-button1').onclick = async function (e) {
@@ -56,13 +64,14 @@ document.getElementById('rzp-button1').onclick = async function (e) {
         //this handle function will handle the success payment
         "handler": async (response) => {
             console.log('testing')
-            await axios.post('http://localhost:3000/purchase/updatetransactionstatus', {
+            const res = await axios.post('http://localhost:3000/purchase/updatetransactionstatus', {
                 order_id: options.order_id,
                 payment_id: response.razorpay_payment_id,
             }, { headers: { "Authorization": token } })
             alert('You are a Premium User Now')
             document.getElementById('rzp-button1').style.visibility = "hidden"
             document.getElementById('message').innerHTML = "you are a primium user"
+            console.log(res.data + 'hiii')
             localStorage.setItem('token', res.data.token)
             showLeaderBoard()
         },
@@ -81,6 +90,7 @@ function showLeaderBoard() {
     const inputElement = document.createElement("input");
     inputElement.type = "button";
     inputElement.value = 'Show Leaderboard';
+    console.log(inputElement + 'this is inputelement')
     inputElement.onclick = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -93,7 +103,8 @@ function showLeaderBoard() {
 
             userLeaderBoardArray.data.forEach((userDetails) => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `Name - ${userDetails.name}, Total Expense - ${userDetails.total_cost}`;
+                listItem.id = `leaderBoard${userDetails.id}`
+                listItem.textContent = `Name - ${userDetails.name}, Total Expense - ${userDetails.totalExpenses}`;
                 leaderboardElem.appendChild(listItem);
             });
         } catch (error) {
@@ -142,4 +153,4 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log('error - get error')
         console.log('Error occurred while fetching or processing data.');
     }
-});   
+});

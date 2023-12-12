@@ -1,5 +1,7 @@
 const Rezorpay = require('razorpay')
 const Order = require('../model/orders')
+const Expense = require('../model/expenses')
+const user = require('./user')
 
 const purchasepremium = async (req, res, next) => {
     try {
@@ -37,7 +39,7 @@ const updateTransactionStatus = async (req,res) => {
         const promise2 = await req.user.update({ ispremiumuser: true})
 
         Promise.all([promise1, promise2]).then(() => {
-            return res.status(202).json({success:true, message: "Transaction Successful", token: userController.generateAccessToken(userId, undefined, true)})
+            return res.status(202).json({success:true, message: "Transaction Successful", token: user.generateAccessToken(order.userId, undefined, true)})
         }).catch((error) => {
             throw new Error(error)
         })
