@@ -8,8 +8,8 @@ function forgotpassword(e) {
 
     }
     console.log(userDetails)
-    axios.post('http://localhost:3000/password/forgotpassword',userDetails).then(response => {
-        if(response.status === 202){
+    axios.post('http://localhost:3000/password/forgotpassword',userDetails).then(res => {
+        if(res.status === 202){
             document.body.innerHTML += '<div style="color:red;">Mail Successfuly sent <div>'
         } else {
             throw new Error('Something went wrong!!!')
