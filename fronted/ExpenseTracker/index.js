@@ -26,7 +26,7 @@ function displayDetails(object) {
     let li = document.createElement('li');
     li.id = `${object.id}`;
     li.classList.add("firstLi")
-    li.innerHTML = `<div>${object.expenseamount} - ${object.description} - ${object.category} <button type='button' class="button" onclick='deleteExpense(${object.id})'>Delete Expense</button></div>`;
+    li.innerHTML += `<div>${object.expenseamount} - ${object.description} - ${object.category} <button type='button' class="button" onclick='deleteExpense(${object.id})'>Delete Expense</button></div>`;
     ul.appendChild(li);
 }
 
@@ -46,28 +46,52 @@ async function deleteExpense(id) {
 
 function upadatedExpensefun(userDetails) {
     const updateExpense = document.getElementById(`leaderBoard${userDetails.id}`)
-    if(updateExpense)
-    updateExpense.textContent = `Name - ${userDetails.name}, Total Expense - ${userDetails.totalExpenses}`;
+    if (updateExpense)
+        updateExpense.textContent = `Name - ${userDetails.name}, Total Expense - ${userDetails.totalExpenses}`;
 
 }
 
-function download(){
-    axios.get('http://localhost:3000/user/download', { headers: {"Authorization" : token} })
-    .then((response) => {
-        if(response.status === 201){
-            var a = document.createElement("a");
-            a.href = response.data.fileUrl;
-            a.download = 'myexpense.csv';
-            a.click();
-        } else {
-            throw new Error(response.data.message)
-        }
-
-    })
-    .catch((err) => {
-        showError(err)
-    });
+function toggleButton() {
+    const token = localStorage.getItem('token')
+    const decodeToken = parseJwt(token)
+    const ispremiumuser = decodeToken.ispremiumuser
+    var button = document.getElementById("downloadexpense");
+    if (ispremiumuser) {
+        button.style.display = "block";
+    } else {
+        button.style.display = "none";
+    }
 }
+
+function download() {
+    const token = localStorage.getItem('token');
+    axios.get('http://localhost:3000/expense/download', { headers: { "Authorization": token } })
+        .then((response) => {
+            if (response.status === 200) {
+                let li = document.createElement('li');
+                li.classList.add("downloadbtn");
+                let link = document.createElement('a');
+                link.href = response.data.fileURL;
+                link.download = 'myexpense.csv';
+                link.innerHTML += `<div>${response.data.fileURL}</div>`;
+                li.appendChild(link);
+                
+                // Adding a click event listener to the <li> element
+                li.addEventListener('click', function() {
+                    // Trigger the click event of the <a> element to initiate download
+                    link.click();
+                });
+
+                ul.appendChild(li);
+            } else {
+                throw new Error(response.data.message);
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+}
+
 document.getElementById('rzp-button1').onclick = async function (e) {
     const token = localStorage.getItem('token')
     const response = await axios.get('http://localhost:3000/purchase/premiummembership', { headers: { "Authorization": token } })
@@ -128,15 +152,15 @@ function showLeaderBoard() {
     document.getElementById("message").appendChild(inputElement);
 }
 
-function showPrimiumuserMessage(){
+function showPrimiumuserMessage() {
     document.getElementById('rzp-button1').style.visibility = "hidden"
-    document.getElementById('message').innerHTML = "you are a primium user" 
+    document.getElementById('message').innerHTML = "you are a primium user"
 }
 
-function parseJwt (token) {
+function parseJwt(token) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
@@ -151,9 +175,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         const decodeToken = parseJwt(token)
         console.log(decodeToken)
         const ispremiumuser = decodeToken.ispremiumuser
-        if(ispremiumuser){
+        if (ispremiumuser) {
             showPrimiumuserMessage();
             showLeaderBoard()
+            toggleButton()
+
         }
         let result = await axios.get('http://localhost:3000/expense/get-expenses', { headers: { "Authorization": token } });
         console.log(result)

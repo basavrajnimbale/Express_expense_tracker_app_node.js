@@ -1,15 +1,18 @@
 const Expense = require('../model/expenses');
 const User = require('../model/users');
 const sequelize = require('../util/database');
+const UserServices = require('../services/userservices')
+const S3service = require('../services/S3services')
+const Url = require('../model/urls')
 
 exports.addExpense = async (req, res, next) => {
     try {
-        const t = await sequelize.transaction(); 
+        const t = await sequelize.transaction();
         const { expenseamount, description, category } = req.body;
 
         const expense = await Expense.create(
             { expenseamount, description, category, userId: req.user.id },
-            { transaction: t } 
+            { transaction: t }
         );
 
         const totalExpense = Number(req.user.totalExpenses) + Number(expenseamount);
@@ -37,11 +40,16 @@ exports.deleteExpense = async (req, res, next) => {
         t = await sequelize.transaction();
 
         const expenseId = req.params.id;
+
         if (expenseId == undefined || expenseId.length === 0) {
-            res.status(400).json({ success: false, message: "bad parameter" })
+            return res.status(400).json({ success: false, message: "bad parameter" })
         }
 
         const deleteExpense = await Expense.findByPk(expenseId);
+
+        if (!deleteExpense) {
+            return res.status(404).json({ success: false, message: "Expense not found" }); // Return after sending response
+        }
 
         req.user.totalExpenses -= deleteExpense.expenseamount;
 
@@ -63,12 +71,29 @@ exports.deleteExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try {
-        console.log(req + 'this is user id');
         const expense = await Expense.findAll({ where: { userId: req.user.id } });
-        //('hiiii', expense);
         res.status(201).json(expense);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'An error occurred while fetching expense.' });
+    }
+};
+
+exports.downloadexpense = async (req, res) => {
+    try {
+        const expenses = await UserServices.getExpenses(req);
+        console.log(expenses);
+        const stringifiedExpenses = JSON.stringify(expenses);
+        const userId = req.user.id
+        const filename = `Expense${userId}/${new Date()}.txt`;
+        const fileURL = await S3service.uploadToS3(stringifiedExpenses, filename);
+        console.log(fileURL);
+        const url = await Url.create({url: fileURL, userId: req.user.id})
+        console.log(url);
+        res.status(200).json({ fileURL, success: true });
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ fileURL: '', success: false, err:err });
     }
 };

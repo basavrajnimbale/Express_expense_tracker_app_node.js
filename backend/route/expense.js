@@ -12,4 +12,6 @@ route.delete('/delete-expense/:id', userauthentication.authenticate, Expense.del
 
 route.get('/get-expenses', userauthentication.authenticate, Expense.getExpenses);
 
+route.get('/download', userauthentication.authenticate, Expense.downloadexpense)
+
 module.exports = route;

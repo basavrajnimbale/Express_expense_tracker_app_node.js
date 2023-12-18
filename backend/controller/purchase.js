@@ -32,7 +32,6 @@ const purchasepremium = async (req, res, next) => {
 
 const updateTransactionStatus = async (req,res) => {
     try {
-        console.log('checking response');
         const { payment_id, order_id} = req.body;
         const order = await Order.findOne({where : {orderid : order_id}})
         const promise1 = order.update({ paymentid: payment_id, status: 'SUCCESSFUL'})
