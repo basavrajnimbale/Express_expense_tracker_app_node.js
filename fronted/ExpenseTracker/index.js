@@ -1,5 +1,42 @@
 const form = document.getElementById('expense-form')
+const token = localStorage.getItem('token');
+const pages = document.getElementById('pages');
 const ul = document.getElementById('listOfExpenses')
+
+async function sendGetRequest(page){
+    try {
+        const {data} = await axios.get(`http://localhost:3000/expense/get-expenses?page=${page}`, { headers: { "Authorization": token } });
+        console.log(data);
+        const { expenses, pageData } = data;
+        // const li = document.getElementsByClassName('firstLi')
+        ul.innerHTML = '';
+        expenses.forEach(expense => {
+            displayDetails(expense);
+        });
+        pages.innerHTML = '';
+
+        if(+pageData.previousPage > 0){
+            console.log(pageData.previousPage, 'type-', typeof (pageData.previousPage), 'typeof', typeof(+pageData.previousPage));
+            if(+pageData.previousPage > 1){
+                pages.innerHTML = `<button id='page1' onclick='sendGetRequest(1)'>1</button>`
+                
+            }
+            // pages.innerHTML = '';
+            pages.innerHTML += `<button id='page${pageData.previousPage}' onclick='sendGetRequest(${pageData.previousPage})'>${pageData.previousPage}</button>`;
+        }
+        // expenses.remove();
+        pages.innerHTML += `<button id='page${pageData.currentPage}' onclick='sendGetRequest(${pageData.currentPage})'>${pageData.currentPage}</button>`;
+        document.getElementById(`page${page}`).className = 'active';
+        if(pageData.hasNextPage){
+            // expenses.remove();
+            pages.innerHTML += `<button id='page${pageData.nextPage}' onclick='sendGetRequest(${pageData.nextPage})'>${pageData.nextPage}</button>`
+        }
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -14,6 +51,7 @@ form.addEventListener('submit', async (e) => {
     try {
         const token = localStorage.getItem('token')
         let result = await axios.post('http://localhost:3000/expense/add-expense ', expenseDetails, { headers: { "Authorization": token } });
+        console.log(result)
         displayDetails(result.data.expense);
         form.reset();
     }
@@ -23,9 +61,11 @@ form.addEventListener('submit', async (e) => {
 })
 
 function displayDetails(object) {
+    
     let li = document.createElement('li');
     li.id = `${object.id}`;
     li.classList.add("firstLi")
+    li.innerHTML = '';
     li.innerHTML += `<div>${object.expenseamount} - ${object.description} - ${object.category} <button type='button' class="button" onclick='deleteExpense(${object.id})'>Delete Expense</button></div>`;
     ul.appendChild(li);
 }
@@ -68,8 +108,8 @@ function download() {
     axios.get('http://localhost:3000/expense/download', { headers: { "Authorization": token } })
         .then((response) => {
             if (response.status === 200) {
+                let ul = document.getElementById("urlbutton")
                 let li = document.createElement('li');
-                li.classList.add("downloadbtn");
                 let link = document.createElement('a');
                 link.href = response.data.fileURL;
                 link.download = 'myexpense.csv';
@@ -181,16 +221,21 @@ window.addEventListener('DOMContentLoaded', async () => {
             toggleButton()
 
         }
-        let result = await axios.get('http://localhost:3000/expense/get-expenses', { headers: { "Authorization": token } });
-        console.log(result)
-        console.log(result.data)
-        result.data.forEach((expense) => {
-            console.log(expense);
-            displayDetails(expense);
-        })
+        const page = 1;
+        sendGetRequest(page);
+
+        // let result = await axios.get('http://localhost:3000/expense/get-expenses', { headers: { "Authorization": token } });
+        // console.log(result)
+        // console.log(result.data)
+        // result.data.forEach((expense) => {
+        //     console.log(expense);
+        //     displayDetails(expense);
+        // })
     }
     catch {
         console.log('error - get error')
         console.log('Error occurred while fetching or processing data.');
     }
 });
+
+

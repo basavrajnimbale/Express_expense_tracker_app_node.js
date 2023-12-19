@@ -59,7 +59,7 @@ exports.deleteExpense = async (req, res, next) => {
 
         await t.commit();
 
-        res.status(201).json({ deletedCount: deletedExpenseCount, user: req.user });
+        res.status(200).json({ deletedCount: deletedExpenseCount, user: req.user });
     } catch (err) {
         if (t) {
             await t.rollback();
@@ -69,15 +69,42 @@ exports.deleteExpense = async (req, res, next) => {
     }
 };
 
+// exports.getExpenses = async (req, res, next) => {
+//     try {
+//         const expense = await Expense.findAll({ where: { userId: req.user.id } });
+//         res.status(201).json(expense);
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: 'An error occurred while fetching expense.' });
+//     }
+// };
 exports.getExpenses = async (req, res, next) => {
     try {
-        const expense = await Expense.findAll({ where: { userId: req.user.id } });
-        res.status(201).json(expense);
+        const currentPage = req.query.page || 1; // Changed 'Page' to 'page' for consistency
+        const limit = 5;
+        const total = await Expense.count({ where: { userId: req.user.id } });
+        const hasNextPage = (currentPage * limit) < total;
+        const nextPage = hasNextPage ? Number(currentPage) + 1 : null; // Calculate next page number
+
+        const expenses = await req.user.getExpenses({ offset: (currentPage - 1) * limit, limit: limit });
+        // console.log(expenses);
+        
+        const pageData = {
+            currentPage: Number(currentPage),
+            lastPage: Math.ceil(total / limit),
+            hasNextPage,
+            previousPage: currentPage > 1 ? currentPage - 1 : null, // Set previous page number or null for the first page
+            nextPage
+        };
+
+        const response = { expenses, pageData }; // Combine expenses and pageData into a single object
+        console.log(pageData)
+        res.status(200).json(response);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'An error occurred while fetching expense.' });
+        res.status(500).json({ error: 'An error occurred while fetching expenses.' });
     }
-};
+}
 
 exports.downloadexpense = async (req, res) => {
     try {
@@ -88,12 +115,12 @@ exports.downloadexpense = async (req, res) => {
         const filename = `Expense${userId}/${new Date()}.txt`;
         const fileURL = await S3service.uploadToS3(stringifiedExpenses, filename);
         console.log(fileURL);
-        const url = await Url.create({url: fileURL, userId: req.user.id})
+        const url = await Url.create({ url: fileURL, userId: req.user.id })
         console.log(url);
         res.status(200).json({ fileURL, success: true });
 
     } catch (err) {
         console.log(err)
-        res.status(500).json({ fileURL: '', success: false, err:err });
+        res.status(500).json({ fileURL: '', success: false, err: err });
     }
 };
