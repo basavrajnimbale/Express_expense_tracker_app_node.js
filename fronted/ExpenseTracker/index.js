@@ -2,10 +2,20 @@ const form = document.getElementById('expense-form')
 const token = localStorage.getItem('token');
 const pages = document.getElementById('pages');
 const ul = document.getElementById('listOfExpenses')
+const select = document.getElementById('per-page');
+
+select.oninput = () => {
+    localStorage.setItem("number", select.value);
+    console.log(select.value, localStorage.getItem('number'));
+}
 
 async function sendGetRequest(page){
     try {
-        const {data} = await axios.get(`http://localhost:3000/expense/get-expenses?page=${page}`, { headers: { "Authorization": token } });
+        let number = 5;
+        if(localStorage.getItem('number')){
+            number = localStorage.getItem('number');
+        }
+        const {data} = await axios.get(`http://localhost:3000/expense/get-expenses?page=${page}&number=${number}`, { headers: { "Authorization": token } });
         console.log(data);
         const { expenses, pageData } = data;
         // const li = document.getElementsByClassName('firstLi')
@@ -13,6 +23,7 @@ async function sendGetRequest(page){
         expenses.forEach(expense => {
             displayDetails(expense);
         });
+        
         pages.innerHTML = '';
 
         if(+pageData.previousPage > 0){
@@ -223,6 +234,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
         const page = 1;
         sendGetRequest(page);
+        if(localStorage.getItem('number')){
+            select.value = localStorage.getItem('number');
+        }
 
         // let result = await axios.get('http://localhost:3000/expense/get-expenses', { headers: { "Authorization": token } });
         // console.log(result)

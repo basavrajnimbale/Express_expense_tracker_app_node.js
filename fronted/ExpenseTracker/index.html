@@ -28,7 +28,21 @@
     <ul class ="list-group" id="listOfExpenses">
         <h2>Expenses</h2>
     </ul>
-    <div class="container" id="pages"></div>
+    <div>
+        <span>
+            <label for="per-page">Select Expenses per page:</label>
+            <select name="per-page" id="per-page">                
+                <!-- <option value="">--from below--</option> -->
+                <option selected>5</option>
+                <option>5</option>
+                <option>7</option>
+                <option>9</option>
+                <option>11</option>
+                <option>13</option>
+            </select>
+        </span>
+        <div id="pages"></div>
+    </div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <ul class ="listofurl" id="urlbutton"></ul>
     <div id="leaderboard"></div>

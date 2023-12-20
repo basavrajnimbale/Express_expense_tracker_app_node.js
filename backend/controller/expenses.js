@@ -80,18 +80,23 @@ exports.deleteExpense = async (req, res, next) => {
 // };
 exports.getExpenses = async (req, res, next) => {
     try {
-        const currentPage = req.query.page || 1; // Changed 'Page' to 'page' for consistency
-        const limit = 5;
+        // const currentPage = req.query.page || 1;
+        let {page, number} = req.query;
+        currentPage = Number(page)
+        number = Number(number)
+
         const total = await Expense.count({ where: { userId: req.user.id } });
-        const hasNextPage = (currentPage * limit) < total;
+        console.log('know the type', number, typeof(number), currentPage, typeof(total));
+        const hasNextPage = (currentPage * number) < total;
+        console.log(hasNextPage, '!?', currentPage * number, typeof (currentPage));
         const nextPage = hasNextPage ? Number(currentPage) + 1 : null; // Calculate next page number
 
-        const expenses = await req.user.getExpenses({ offset: (currentPage - 1) * limit, limit: limit });
+        const expenses = await req.user.getExpenses({ offset: (currentPage - 1) * number, limit: number });
         // console.log(expenses);
         
         const pageData = {
             currentPage: Number(currentPage),
-            lastPage: Math.ceil(total / limit),
+            lastPage: Math.ceil(total / number),
             hasNextPage,
             previousPage: currentPage > 1 ? currentPage - 1 : null, // Set previous page number or null for the first page
             nextPage
