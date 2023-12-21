@@ -69,15 +69,6 @@ exports.deleteExpense = async (req, res, next) => {
     }
 };
 
-// exports.getExpenses = async (req, res, next) => {
-//     try {
-//         const expense = await Expense.findAll({ where: { userId: req.user.id } });
-//         res.status(201).json(expense);
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).json({ error: 'An error occurred while fetching expense.' });
-//     }
-// };
 exports.getExpenses = async (req, res, next) => {
     try {
         // const currentPage = req.query.page || 1;

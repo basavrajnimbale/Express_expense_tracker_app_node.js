@@ -76,7 +76,6 @@ function displayDetails(object) {
     let li = document.createElement('li');
     li.id = `${object.id}`;
     li.classList.add("firstLi")
-    li.innerHTML = '';
     li.innerHTML += `<div>${object.expenseamount} - ${object.description} - ${object.category} <button type='button' class="button" onclick='deleteExpense(${object.id})'>Delete Expense</button></div>`;
     ul.appendChild(li);
 }
@@ -237,14 +236,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         if(localStorage.getItem('number')){
             select.value = localStorage.getItem('number');
         }
-
-        // let result = await axios.get('http://localhost:3000/expense/get-expenses', { headers: { "Authorization": token } });
-        // console.log(result)
-        // console.log(result.data)
-        // result.data.forEach((expense) => {
-        //     console.log(expense);
-        //     displayDetails(expense);
-        // })
     }
     catch {
         console.log('error - get error')
